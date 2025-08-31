@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAC 客訴管理後台</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #5a6fd8;
+            --primary-light: #667eea;
+            --accent-color: #28a745;
+            --text-dark: #333;
+            --text-medium: #666;
+            --bg-light: #f5f7fa;
+            --bg-card: #fff;
+            --border-color: #e1e5e9;
+            --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: var(--bg-light);
+            min-height: 100vh;
+            color: var(--text-dark);
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-color) 100%);
+            color: white;
+            padding: 24px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header-title-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            width: 45px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .main-title {
+            font-size: 24px;
+            font-weight: 500;
+        }
+
+        .user-info {
+            font-size: 14px;
+            text-align: right;
+            opacity: 0.9;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-light);
+            text-align: center;
+            transition: transform 0.2s ease;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: var(--text-medium);
+            font-size: 14px;
+        }
+
+        .controls {
+            background: var(--bg-card);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-light);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .controls .search-input,
+        .controls .filter-select {
+            flex: 1;
+            min-width: 150px;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s ease;
+        }
+
+        .controls .search-input:focus,
+        .controls .filter-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .refresh-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            white-space: nowrap;
+        }
+
+        .refresh-btn:hover {
+            background: #5061c5;
+        }
+
+        .refresh-btn:active {
+            transform: scale(0.98);
+        }
+
+        .records-container {
+            background: var(--bg-card);
+            border-radius: 12px;
+            box-shadow: var(--shadow-light);
+            overflow: hidden;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        .records-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .records-table th, .records-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: top;
+        }
+
+        .records-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: var(--text-dark);
+            white-space: nowrap;
+        }
+
+        .records-table tr:hover {
+            background: #fafafa;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-processing {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-buttons button {
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background-color 0.2s ease;
+        }
+        
+        .view-btn {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .view-btn:hover {
+            background: #5061c5;
+        }
+
+        .photo-btn {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .photo-btn:hover {
+            background: #138496;
+        }
+
+        .no-records {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-medium);
+            font-style: italic;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal-content {
+            background-color: var(--bg-card);
+            margin: auto;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            animation: slideIn 0.3s ease-out;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .close-btn {
+            color: var(--text-medium);
+            font-size: 30px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close-btn:hover {
+            color: var(--text-dark);
+        }
+
+        .modal-body h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .detail-row {
+            margin-bottom: 15px;
+        }
+
+        .detail-label {
+            font-weight: 500;
+            color: var(--text-dark);
+            margin-bottom: 4px;
+        }
+
+        .detail-value {
+            color: var(--text-medium);
+            line-height: 1.6;
+        }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .photo-thumbnail {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            border: 2px solid var(--border-color);
+        }
+
+        .photo-thumbnail:hover {
+            transform: scale(1.05);
+            border-color: var(--primary-color);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .image-modal-content {
+            max-width: 90vw;
+            max-height: 90vh;
+            object-fit: contain;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            .user-info {
+                text-align: center;
+            }
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .controls .search-input,
+            .controls .filter-select,
+            .refresh-btn {
+                width: 100%;
+            }
+            .stat-number {
+                font-size: 30px;
+            }
+            .records-table th, .records-table td {
+                padding: 12px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="header-content">
+            <div class="header-title-group">
+                <div class="logo">RAC</div>
+                <div>
+                    <h1 class="main-title">客訴管理後台</h1>
+                    <div style="font-size: 14px; opacity: 0.8;">華德動能股份有限公司</div>
+                </div>
+            </div>
+            <div class="user-info">
+                <span>管理員已登入</span><br>
+                <span id="currentTime"></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <div class="dashboard-stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalCount">0</div>
+                <div class="stat-label">總客訴數</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="pendingCount">0</div>
+                <div class="stat-label">待處理</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="processingCount">0</div>
+                <div class="stat-label">處理中</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="completedCount">0</div>
+                <div class="stat-label">已完成</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <input type="text" class="search-input" id="searchInput" placeholder="搜尋車號、問題描述或姓名...">
+            <select class="filter-select" id="statusFilter">
+                <option value="">所有狀態</option>
+                <option value="待處理">待處理</option>
+                <option value="處理中">處理中</option>
+                <option value="已完成">已完成</option>
+            </select>
+            <select class="filter-select" id="typeFilter">
+                <option value="">所有類型</option>
+                <option value="服務態度">服務態度</option>
+                <option value="車輛狀況">車輛狀況</option>
+                <option value="行車安全">行車安全</option>
+                <option value="收費問題">收費問題</option>
+                <option value="班次延誤">班次延誤</option>
+                <option value="設施問題">設施問題</option>
+                <option value="其他">其他</option>
+            </select>
+            <button class="refresh-btn" id="refreshBtn">🔄 重新載入</button>
+        </div>
+
+        <div class="records-container">
+            <div class="table-wrapper">
+                <table class="records-table" id="recordsTable">
+                    <thead>
+                        <tr>
+                            <th>編號</th>
+                            <th>日期時間</th>
+                            <th>車號</th>
+                            <th>問題類型</th>
+                            <th>聯絡人</th>
+                            <th>電話</th>
+                            <th>狀態</th>
+                            <th>照片</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recordsBody">
+                        <tr class="no-records">
+                            <td colspan="9">目前沒有客訴記錄</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('detailModal')">&times;</span>
+            <div class="modal-body">
+                <h2>客訴詳細內容</h2>
+                <div id="detailContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="imageModal" class="modal">
+        <span class="close-btn" onclick="closeModal('imageModal')">&times;</span>
+        <img class="image-modal-content" id="modalImage" alt="客訴照片">
+    </div>
+
+    <script>
+        let allRecords = [];
+        let filteredRecords = [];
+        
+        // 🚨 請將此處替換為您自己的 Google Apps Script URL
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzEC2grQVwFUyOqYlpqZwkyPdfwP-BbQ7-xj8_K1k4mab7-H_J86rS2j6AFvz-plRbF/exec';
+
+        const dom = {
+            totalCount: document.getElementById('totalCount'),
+            pendingCount: document.getElementById('pendingCount'),
+            processingCount: document.getElementById('processingCount'),
+            completedCount: document.getElementById('completedCount'),
+            searchInput: document.getElementById('searchInput'),
+            statusFilter: document.getElementById('statusFilter'),
+            typeFilter: document.getElementById('typeFilter'),
+            refreshBtn: document.getElementById('refreshBtn'),
+            recordsBody: document.getElementById('recordsBody'),
+            detailModal: document.getElementById('detailModal'),
+            detailContent: document.getElementById('detailContent'),
+            imageModal: document.getElementById('imageModal'),
+            modalImage: document.getElementById('modalImage'),
+        };
+
+        // 載入資料
+        async function loadData() {
+            try {
+                dom.refreshBtn.textContent = '載入中...';
+                dom.refreshBtn.disabled = true;
+
+                const response = await fetch(GOOGLE_SCRIPT_URL + '?action=getData');
+                const data = await response.json();
+
+                if (data.records) {
+                    allRecords = data.records.map((record, index) => ({ ...record, id: index + 1 }));
+                    filteredRecords = [...allRecords];
+                    updateDisplay();
+                } else {
+                    console.error('API 錯誤:', data.error);
+                    loadSampleData();
+                }
+            } catch (error) {
+                console.error('載入資料失敗:', error);
+                loadSampleData();
+            } finally {
+                dom.refreshBtn.textContent = '🔄 重新載入';
+                dom.refreshBtn.disabled = false;
+            }
+        }
+
+        function loadSampleData() {
+             const sampleRecords = [
+                 { id: 1, dateTime: '2024/08/31 14:30:25', vehicleNumber: 'ABC-1234', problemType: '服務態度', description: '司機態度不佳，未協助搬運行李，且在車程中大聲講電話影響乘客休息。希望能加強司機服務訓練。', customerName: '王先生', customerPhone: '0912-345-678', photos: [], status: '待處理' },
+                 { id: 2, dateTime: '2024/08/31 10:15:42', vehicleNumber: 'XYZ-9876', problemType: '車輛狀況', description: '車內冷氣故障，座椅有明顯污漬，車窗無法正常開啟。影響乘車舒適度。', customerName: '李小姐', customerPhone: '0987-654-321', photos: [], status: '處理中' },
+                 { id: 3, dateTime: '2024/08/30 16:45:12', vehicleNumber: 'DEF-5678', problemType: '收費問題', description: '收費金額與預估不符，司機無法提供明細說明，要求退還多收費用。', customerName: '陳先生', customerPhone: '0923-456-789', photos: [], status: '已完成' },
+                 { id: 4, dateTime: '2024/08/30 09:20:33', vehicleNumber: 'GHI-3456', problemType: '行車安全', description: '司機駕駛過程中使用手機，車速過快，未遵守交通規則。', customerName: '張小姐', customerPhone: '0934-567-890', photos: [], status: '處理中' },
+                 { id: 5, dateTime: '2024/08/29 20:10:15', vehicleNumber: 'JKL-7890', problemType: '班次延誤', description: '預約時間19:30，實際到達時間20:15，延誤45分鐘無事前通知。', customerName: '劉先生', customerPhone: '0945-678-901', photos: [], status: '已完成' }
+             ];
+             allRecords = sampleRecords;
+             filteredRecords = [...allRecords];
+             updateDisplay();
+         }
+
+        function updateDisplay() {
+            updateStats();
+            updateTable();
+        }
+
+        function updateStats() {
+            const total = allRecords.length;
+            const pending = allRecords.filter(r => r.status === '待處理').length;
+            const processing = allRecords.filter(r => r.status === '處理中').length;
+            const completed = allRecords.filter(r => r.status === '已完成').length;
+
+            dom.totalCount.textContent = total;
+            dom.pendingCount.textContent = pending;
+            dom.processingCount.textContent = processing;
+            dom.completedCount.textContent = completed;
+        }
+
+        function updateTable() {
+            dom.recordsBody.innerHTML = '';
+            
+            if (filteredRecords.length === 0) {
+                dom.recordsBody.innerHTML = '<tr class="no-records"><td colspan="9">沒有符合條件的記錄</td></tr>';
+                return;
+            }
+
+            filteredRecords.forEach(record => {
+                const row = document.createElement('tr');
+                const statusClass = getStatusClass(record.status);
+                const hasPhotos = record.photos && record.photos.length > 0;
+
+                row.innerHTML = `
+                    <td>#${String(record.id).padStart(4, '0')}</td>
+                    <td>${record.dateTime}</td>
+                    <td><strong>${record.vehicleNumber}</strong></td>
+                    <td>${record.problemType}</td>
+                    <td>${record.customerName}</td>
+                    <td>${record.customerPhone}</td>
+                    <td><span class="status-badge status-${statusClass}">${record.status}</span></td>
+                    <td>
+                        ${hasPhotos ? `<button class="photo-btn" onclick="openPhotoModal(${record.id})">查看 (${record.photos.length})</button>` : `<span style="color: #999;">無照片</span>`}
+                    </td>
+                    <td>
+                        <button class="view-btn" onclick="openDetailModal(${record.id})">查看詳情</button>
+                    </td>
+                `;
+                dom.recordsBody.appendChild(row);
+            });
+        }
+
+        function getStatusClass(status) {
+            switch(status) {
+                case '待處理': return 'pending';
+                case '處理中': return 'processing';
+                case '已完成': return 'completed';
+                default: return 'pending';
+            }
+        }
+
+        function openDetailModal(recordId) {
+            const record = allRecords.find(r => r.id === recordId);
+            if (!record) return;
+
+            dom.detailContent.innerHTML = `
+                <div class="detail-row"><div class="detail-label">客訴編號：</div><div class="detail-value">#${String(record.id).padStart(4, '0')}</div></div>
+                <div class="detail-row"><div class="detail-label">提交時間：</div><div class="detail-value">${record.dateTime}</div></div>
+                <div class="detail-row"><div class="detail-label">車號：</div><div class="detail-value"><strong>${record.vehicleNumber}</strong></div></div>
+                <div class="detail-row"><div class="detail-label">問題類型：</div><div class="detail-value">${record.problemType}</div></div>
+                <div class="detail-row"><div class="detail-label">聯絡人：</div><div class="detail-value">${record.customerName}</div></div>
+                <div class="detail-row"><div class="detail-label">聯絡電話：</div><div class="detail-value">${record.customerPhone}</div></div>
+                <div class="detail-row"><div class="detail-label">處理狀態：</div><div class="detail-value"><span class="status-badge status-${getStatusClass(record.status)}">${record.status}</span></div></div>
+                <div class="detail-row"><div class="detail-label">問題描述：</div><div class="detail-value">${record.description}</div></div>
+                ${record.photos && record.photos.length > 0 ? `
+                <div class="detail-row">
+                    <div class="detail-label">相關照片：</div>
+                    <div class="photo-grid">
+                        ${record.photos.map(photo => `<img src="${photo.data}" class="photo-thumbnail" onclick="openImageModal('${photo.data}')" alt="客訴照片">`).join('')}
+                    </div>
+                </div>
+                ` : ''}
+            `;
+            dom.detailModal.style.display = 'flex';
+        }
+
+        function openPhotoModal(recordId) {
+            const record = allRecords.find(r => r.id === recordId);
+            if (record && record.photos && record.photos.length > 0) {
+                openImageModal(record.photos[0].data);
+            }
+        }
+
+        function openImageModal(imageSrc) {
+            dom.modalImage.src = imageSrc;
+            dom.imageModal.style.display = 'flex';
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        dom.searchInput.addEventListener('input', filterRecords);
+        dom.statusFilter.addEventListener('change', filterRecords);
+        dom.typeFilter.addEventListener('change', filterRecords);
+        dom.refreshBtn.addEventListener('click', loadData);
+
+        function filterRecords() {
+            const searchTerm = dom.searchInput.value.toLowerCase();
+            const statusFilter = dom.statusFilter.value;
+            const typeFilter = dom.typeFilter.value;
+
+            filteredRecords = allRecords.filter(record => {
+                const matchesSearch = 
+                    record.vehicleNumber.toLowerCase().includes(searchTerm) ||
+                    record.problemType.toLowerCase().includes(searchTerm) ||
+                    record.description.toLowerCase().includes(searchTerm) ||
+                    record.customerName.toLowerCase().includes(searchTerm);
+                
+                const matchesStatus = !statusFilter || record.status === statusFilter;
+                const matchesType = !typeFilter || record.problemType === typeFilter;
+
+                return matchesSearch && matchesStatus && matchesType;
+            });
+
+            updateTable();
+        }
+
+        function updateCurrentTime() {
+            const now = new Date();
+            dom.currentTime.textContent = now.toLocaleString('zh-TW');
+        }
+
+        window.onload = () => {
+            updateCurrentTime();
+            setInterval(updateCurrentTime, 60000);
+            loadData();
+        };
+
+        // 點擊模態框背景關閉
+        document.getElementById('detailModal').addEventListener('click', (e) => {
+            if (e.target.id === 'detailModal') closeModal('detailModal');
+        });
+
+        document.getElementById('imageModal').addEventListener('click', (e) => {
+            if (e.target.id === 'imageModal') closeModal('imageModal');
+        });
+    </script>
+
+</body>
+</html>
